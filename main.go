@@ -92,6 +92,37 @@ func main() {
 		w.Write([]byte(token))
 	})
 
+	r.Get("/api/v1/auth/user", func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		session := r.Header.Get("session")
+
+		if err != nil {
+			log.Printf("error getting cookie: %v\n\n", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token, err := client.VerifySessionCookieAndCheckRevoked(r.Context(), session)
+		if err != nil {
+			log.Printf("error verifying session cookie: %v\n\n", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		user, err := client.GetUser(r.Context(), token.UID)
+
+		// Create an instance of UserResponse and populate it
+		response := map[string]string{
+			"user_id": user.UID,
+			"email":   user.Email,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		json.NewEncoder(w).Encode(response)
+	})
+
 	log.Println("Running on localhost:8080")
 	http.ListenAndServe(":8080", r)
 }
