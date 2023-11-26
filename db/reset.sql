@@ -12,8 +12,17 @@ CREATE TABLE organizations
 -- Create project table
 CREATE TABLE projects
 (
+    id   SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE
+);
+
+CREATE TABLE accounts
+(
     id              SERIAL PRIMARY KEY,
-    name            VARCHAR(255) UNIQUE
+    user_uuid       UUID UNIQUE,
+    email           VARCHAR(255) UNIQUE,
+    password        VARCHAR(255),
+    organization_id INTEGER REFERENCES organizations (id)
 );
 
 
